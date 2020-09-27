@@ -1,12 +1,12 @@
 #include "tables.h"
 
-//typedef unsigned long long block;
-unsigned long long perm(unsigned long long input, short table[], int n)
+typedef unsigned long long uint64;
+uint64 perm(uint64 input, short table[], int n)
 {
-    unsigned long long ret = 0;
+    uint64 ret = 0;
     for(int i = 0; i < n; i++)
     {
-        unsigned long long t = (input >> (table[i] - 1) & 1);
+        uint64 t = (input >> (table[i] - 1) & 1);
         t = t << i;
         ret = ret | t;
     }
@@ -17,12 +17,12 @@ unsigned long long perm(unsigned long long input, short table[], int n)
  * input : 64 bits plain text
  * output: 64 bits concatenation of L0 and R0
  */ 
-unsigned long long initPerm(unsigned long long M)
+uint64 initPerm(uint64 M)
 {
-    // unsigned long long ret = 0;
+    // uint64 ret = 0;
     // for(int i = 0; i < 64; i++)
     // {
-    //     unsigned long long t = (M >> (IP[i] - 1) & 1);
+    //     uint64 t = (M >> (IP[i] - 1) & 1);
     //     t = t << i;
     //     ret = ret | t;
     // }
@@ -35,12 +35,12 @@ unsigned long long initPerm(unsigned long long M)
  * input : 64 bits concatenation of L0 and R0
  * output: 64 bits cipher text
  */ 
-unsigned long long finalPerm(unsigned long long M)
+uint64 finalPerm(uint64 M)
 {
-    // unsigned long long ret = 0;
+    // uint64 ret = 0;
     // for(int i = 0; i < 64; i++)
     // {
-    //     unsigned long long t = (M >> (FP[i] - 1) & 1);
+    //     uint64 t = (M >> (FP[i] - 1) & 1);
     //     t = t << i;
     //     ret = ret | t;
     // }
@@ -54,26 +54,26 @@ unsigned long long finalPerm(unsigned long long M)
  * output: 48 bits E(R_i-1)
  */ 
 
-unsigned long long E_expansion(unsigned long long R)
+uint64 E_expansion(uint64 R)
 {
     return perm(R, E, 48);
 }
 
-unsigned long long PC1_perm(unsigned long long K64)
+uint64 PC1_perm(uint64 K64)
 {
     return perm(K64, PC1, 56);
 }
 
-unsigned long long PC2_perm(unsigned long long K56)
+uint64 PC2_perm(uint64 K56)
 {
     return perm(K56, PC2, 48);
 }
 
 
-void genSubKeys(unsigned long long K, unsigned long long *subkeys)
+void genSubKeys(uint64 K, uint64 *subkeys)
 {   
-    unsigned long long C0D0 = PC1_perm(K);
-    unsigned long long C[17], D[17];
+    uint64 C0D0 = PC1_perm(K);
+    uint64 C[17], D[17];
     D[0] = (C0D0 << 36) >>36;
     C[0] = C0D0 >> 28;
 
@@ -84,7 +84,7 @@ void genSubKeys(unsigned long long K, unsigned long long *subkeys)
             // left cyclic shift 1 bit
 
             // record the highest bit
-            unsigned long long tc = C[i-1] >> 27;
+            uint64 tc = C[i-1] >> 27;
             // left shift 1 bit
             C[i] = C[i-1] << 1;
             // cp highest bit to lowest bit
@@ -93,7 +93,7 @@ void genSubKeys(unsigned long long K, unsigned long long *subkeys)
             C[i] = (C[i] << 36) >> 36;
 
             // the same 
-            unsigned long long td = D[i-1] >> 27;
+            uint64 td = D[i-1] >> 27;
             D[i] = D[i-1] << 1;
             D[i] = D[i] | td;
             D[i] = (D[i] << 36) >> 36;
@@ -103,7 +103,7 @@ void genSubKeys(unsigned long long K, unsigned long long *subkeys)
             // left cyclic shift 2 bits
 
             // record the highest 2 bits
-            unsigned long long tc = C[i-1] >> 26;
+            uint64 tc = C[i-1] >> 26;
             // left shift 2 bits
             C[i] = C[i-1] << 2;
             // cp highest 2 bits to lowest 2 bits
@@ -112,7 +112,7 @@ void genSubKeys(unsigned long long K, unsigned long long *subkeys)
             C[i] = (C[i] << 36) >> 36;
 
             //the same
-            unsigned long long td = D[i-1] >> 26;
+            uint64 td = D[i-1] >> 26;
             D[i] = D[i-1] << 2;
             D[i] = D[i] | td;
             D[i] = (D[i] << 36) >> 36;
