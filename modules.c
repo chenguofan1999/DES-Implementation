@@ -62,11 +62,33 @@ uint64 P_perm(uint64 x)
  */ 
 void genSubKeys(uint64 K, uint64 *subkeys)
 {   
+
+    //////
+    printf("key: ");
+    print64(K);
+    //////
+
     uint64 C0D0 = PC1_perm(K);
+
+    //////
+    printf("C0D0: ");
+    print64(C0D0);
+    //////
+
     uint64 C[17], D[17];
 
     D[0] = (C0D0 << 36) >> 36;
     C[0] = C0D0 >> 28 ;
+
+    //////
+    printf("D0 : ");
+    print64n(D[0], 28);
+    //////
+
+    //////
+    printf("C0 : ");
+    print64n(C[0], 28);
+    //////
 
     for(int i = 1; i <= 16; i++)
     {
@@ -108,8 +130,20 @@ void genSubKeys(uint64 K, uint64 *subkeys)
             D[i] = D[i] | td;
             D[i] = (D[i] << 36) >> 36;
         }
-        int concat = (C[i] << 28) | D[i];
+        
+        uint64 concat = (C[i] << 28) | D[i];
         subkeys[i] = PC2_perm(concat);
+        
+        //////
+        printf("C[%d]: ", i);
+        print64n(C[i], 28);
+        printf("D[%d]: ", i);
+        print64n(D[i], 28);
+        printf("concat: ");
+        print64n(concat,56);
+        printf("subkey_%d: ", i);
+        print64n(subkeys[i], 48);
+        //////
     }
 }
 
@@ -214,7 +248,7 @@ uint64 decryption(uint64 key, uint64 cipherText)
     // 3.交换置换
     R[16] = R[16] << 32;
     uint64 plainText = R[16] | L[16];
-    
+
     // 4.IP-1 perm
     plainText = finalPerm(plainText);
 }
