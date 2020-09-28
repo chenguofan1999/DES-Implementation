@@ -23,14 +23,6 @@ int main()
     // test = PC2_perm(test);
     // printf("%llu\n",test);
 
-
-    uint64 key = 0x0000000000000000;
-    uint64 plaintext = 0x0000000000000000;
-    printf("%llu\n",encryption(key, plaintext));
-
-    uint64 t = 0x8CA64DE9C1B123A7;
-    printf("%llu\n",t);
-    
     // uint64 *subkeySet= (uint64 *) malloc(17 * sizeof(uint64));
 
     // genSubKeys(key, subkeySet);
@@ -41,4 +33,35 @@ int main()
     //     //print64(subkeySet[i]);
     // }
 
+// main:
+    // uint64 key = 0x00700C00D000A000;
+    // uint64 plaintext = 0x0F00D06005000000;
+    // uint64 cipherText = encryption(key, plaintext);
+    // uint64 maybePlain = decryption(key, cipherText);
+    // print64(cipherText);
+    // print64(maybePlain);
+
+// test of Festel:
+    // uint64 subkey1 = 0x0000ABCDEF123456;
+    // uint64 subkey2 = 0x0000BDCAFE666666;
+    // uint64 subkey3 = 0x00002DC02E689666;
+
+    // uint64 text = 0x000000009ABCDEF0;
+
+    // Feistel(text, subkey1);
+    // printf("\n\n");
+    // Feistel(text, subkey2);
+    // printf("\n\n");
+    // Feistel(text, subkey3);
+
+// test of genSubkeys:
+    uint64 key = 0x00000FF00FF00FF0;
+    uint64 *subkeys = (uint64*) malloc (17 * sizeof(uint64));
+    genSubKeys(key, subkeys);
+
+    for(int i = 1; i <= 16; i++)
+    {
+        printf("k_%d: \n", i);
+        print64(subkeys[i]);
+    }
 }

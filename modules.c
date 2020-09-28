@@ -1,25 +1,6 @@
 #include "tables.h"
+#include "toolFunc.c"
 
-typedef unsigned long long uint64;
-uint64 perm(uint64 input, short table[], int n)
-{
-    uint64 ret = 0;
-    for(int i = 0; i < n; i++)
-    {
-        uint64 t = (input >> (table[i] - 1) & 1);
-        t = t << i;
-        ret = ret | t;
-    }
-    return ret;
-}
-
-void print64(uint64 num)
-{
-    printf("%llu\n",num);
-    for(int i = 63; i >= 0; i--)
-        printf("%llu", num>>i & 1);
-    printf("\n");
-}
 
 /* Initial Permutation
  * input : 64-bit plain text
@@ -30,7 +11,6 @@ uint64 initPerm(uint64 M)
     return perm(M, IP, 64);
 }
 
-
 /* Final Permutation
  * input : 64-bit concatenation of L0 and R0
  * output: 64-bit cipher text
@@ -39,7 +19,6 @@ uint64 finalPerm(uint64 M)
 {
     return perm(M, FP, 64);
 }
-
 
 /* E-Expansion
  * input : 32-bit R_i-1
@@ -77,7 +56,10 @@ uint64 P_perm(uint64 x)
     return perm(x, P, 32);
 }
 
-
+/* generate subkeys
+ * input : 64-bit key, array of subkeys
+ * output: nothing but subkeys are writen
+ */ 
 void genSubKeys(uint64 K, uint64 *subkeys)
 {   
     uint64 C0D0 = PC1_perm(K);
@@ -131,7 +113,7 @@ void genSubKeys(uint64 K, uint64 *subkeys)
     }
 }
 
-/* Feistel
+/* Feistel round function
  * input : a 32-bit text and a 48-bit subkey
  * output: a 32-bit text
  */ 
@@ -148,25 +130,29 @@ uint64 Feistel(uint64 text, uint64 subkey)
     for(int i = 0; i < 8; i++)
     {
         // 每次取最低6位
-        int t = (text << 58) >> 58;
+        uint64 t = (text << 58) >> 58;
         
         // x是t的高两位
-        int x = t >> 4; 
+        uint64 x = t >> 4; 
         
         // y是t的低四位
-        int y = (t << 2) >> 2;
+        uint64 y = (t << 60) >> 60;
 
         t = S_box[i][x][y];
-        afterS = afterS | (t << (6 * i));
+        t = t << (4 * i);
+        afterS = afterS | t;
 
         // 右移6位
-        text >> 6;
+        text = text >> 6;
     }
 
     // 4. P-Perm
-    return P_perm(afterS);
+    uint64 res = P_perm(afterS);
+    return res;
 }
-/* encryption
+
+
+/* Encryption
  * input : 64-bit key, 64-bit plainText
  * output: 64-bit cipherText
  */
@@ -201,11 +187,34 @@ uint64 encryption(uint64 key, uint64 plainText)
 }
 
 
-/* decryption
+/* Decryption
  * input : 64-bit key, 64-bit cipherText
  * output: 64-bit plainText
  */
 uint64 decryption(uint64 key, uint64 cipherText)
 {
+    // 0.generate subkeys 
+    uint64 *subkeySet = (uint64 *) malloc(17 * sizeof(uint64));
+    genSubKeys(key, subkeySet);
+
+    // 1.IP perm -> L0R0(64-bit)
+    uint64 L0R0 = initPerm(cipherText);
+    uint64 L[17], R[17];
+
+    L[0] = L0R0 >> 32;
+    R[0] = (L0R0 << 32) >> 32;
+
+    // 2.Feistel rounds -> L16R16
+    for(int i = 1; i <= 16; i++)
+    {
+        L[i] = R[i-1];
+        R[i] = L[i-1] ^ Feistel(R[17-i], subkeySet[i]);
+    }
+
+    // 3.交换置换
+    R[16] = R[16] << 32;
+    uint64 plainText = R[16] | L[16];
     
+    // 4.IP-1 perm
+    plainText = finalPerm(plainText);
 }
