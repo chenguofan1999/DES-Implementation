@@ -1,11 +1,11 @@
 typedef unsigned long long uint64;
-uint64 perm(uint64 input, short table[], int n)
+uint64 perm(uint64 input, short table[], int fromN, int toN)
 {
     uint64 ret = 0;
-    for(int i = 0; i < n; i++)
+    for(int i = 0; i < toN; i++)
     {
-        uint64 t = (input >> (64 - table[i]) & 1);
-        t = t << (n - 1 - i);
+        uint64 t = (input >> (fromN - table[i]) & 1);
+        t = t << (toN - 1 - i);
         ret = ret | t;
     }
     return ret;

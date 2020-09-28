@@ -8,16 +8,16 @@
  */ 
 uint64 initPerm(uint64 M)
 {
-    return perm(M, IP, 64);
+    return perm(M, IP, 64, 64);
 }
 
 /* Final Permutation
- * input : 64-bit concatenation of L0 and R0
+ * input : 64-bit concatenation of R16 and L16
  * output: 64-bit cipher text
  */ 
 uint64 finalPerm(uint64 M)
 {
-    return perm(M, FP, 64);
+    return perm(M, FP, 64, 64);
 }
 
 /* E-Expansion
@@ -26,7 +26,7 @@ uint64 finalPerm(uint64 M)
  */ 
 uint64 E_expansion(uint64 R)
 {
-    return perm(R, E, 48);
+    return perm(R, E, 32, 48);
 }
 
 /* PC1_perm in subkey generation
@@ -35,7 +35,7 @@ uint64 E_expansion(uint64 R)
  */ 
 uint64 PC1_perm(uint64 K64)
 {
-    return perm(K64, PC1, 56);
+    return perm(K64, PC1, 64, 56);
 }
 
 /* PC1_perm in subkey generation
@@ -44,7 +44,7 @@ uint64 PC1_perm(uint64 K64)
  */ 
 uint64 PC2_perm(uint64 K56)
 {
-    return perm(K56, PC2, 48);
+    return perm(K56, PC2, 56, 48);
 }
 
 /* P_perm in Feistel func
@@ -53,7 +53,7 @@ uint64 PC2_perm(uint64 K56)
  */ 
 uint64 P_perm(uint64 x)
 {
-    return perm(x, P, 32);
+    return perm(x, P, 32, 32);
 }
 
 /* generate subkeys
@@ -62,33 +62,11 @@ uint64 P_perm(uint64 x)
  */ 
 void genSubKeys(uint64 K, uint64 *subkeys)
 {   
-
-    //////
-    printf("key: ");
-    print64(K);
-    //////
-
     uint64 C0D0 = PC1_perm(K);
-
-    //////
-    printf("C0D0: ");
-    print64(C0D0);
-    //////
-
     uint64 C[17], D[17];
 
     D[0] = (C0D0 << 36) >> 36;
     C[0] = C0D0 >> 28 ;
-
-    //////
-    printf("D0 : ");
-    print64n(D[0], 28);
-    //////
-
-    //////
-    printf("C0 : ");
-    print64n(C[0], 28);
-    //////
 
     for(int i = 1; i <= 16; i++)
     {
@@ -134,16 +112,7 @@ void genSubKeys(uint64 K, uint64 *subkeys)
         uint64 concat = (C[i] << 28) | D[i];
         subkeys[i] = PC2_perm(concat);
         
-        //////
-        printf("C[%d]: ", i);
-        print64n(C[i], 28);
-        printf("D[%d]: ", i);
-        print64n(D[i], 28);
-        printf("concat: ");
-        print64n(concat,56);
-        printf("subkey_%d: ", i);
-        print64n(subkeys[i], 48);
-        //////
+        
     }
 }
 
@@ -156,6 +125,8 @@ uint64 Feistel(uint64 text, uint64 subkey)
     // 1. E-扩展至48位
     text = E_expansion(text);
 
+
+
     // 2. 按位异或
     text = text ^ subkey;
 
@@ -166,19 +137,22 @@ uint64 Feistel(uint64 text, uint64 subkey)
         // 每次取最低6位
         uint64 t = (text << 58) >> 58;
         
-        // x是t的高两位
-        uint64 x = t >> 4; 
+        // x是t的1,6位
+        uint64 x = (t >> 5) << 1 | (t & 1); 
         
-        // y是t的低四位
-        uint64 y = (t << 60) >> 60;
+        // y是t的中间4位
+        uint64 y = t << 59 >> 59 >> 1;
 
-        t = S_box[i][x][y];
+        t = S_box[7 - i][x][y];
         t = t << (4 * i);
         afterS = afterS | t;
 
         // 右移6位
         text = text >> 6;
+
+
     }
+
 
     // 4. P-Perm
     uint64 res = P_perm(afterS);
@@ -203,16 +177,19 @@ uint64 encryption(uint64 key, uint64 plainText)
     L[0] = L0R0 >> 32;
     R[0] = (L0R0 << 32) >> 32;
 
+
     // 2.Feistel rounds -> L16R16
     for(int i = 1; i <= 16; i++)
     {
         L[i] = R[i-1];
         R[i] = L[i-1] ^ Feistel(R[i-1], subkeySet[i]);
+
     }
 
     // 3.交换置换
     R[16] = R[16] << 32;
     uint64 ciphertext = R[16] | L[16];
+
 
     // 4.IP-1 perm
     ciphertext = finalPerm(ciphertext);
@@ -242,7 +219,7 @@ uint64 decryption(uint64 key, uint64 cipherText)
     for(int i = 1; i <= 16; i++)
     {
         L[i] = R[i-1];
-        R[i] = L[i-1] ^ Feistel(R[17-i], subkeySet[i]);
+        R[i] = L[i-1] ^ Feistel(R[i-1], subkeySet[17-i]);
     }
 
     // 3.交换置换
@@ -251,4 +228,6 @@ uint64 decryption(uint64 key, uint64 cipherText)
 
     // 4.IP-1 perm
     plainText = finalPerm(plainText);
+
+    return plainText;
 }
