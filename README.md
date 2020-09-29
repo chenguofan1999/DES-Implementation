@@ -79,15 +79,15 @@ uint64 encryption(uint64 key, uint64 plainText)
 
 - DES算法总体结构：(此处省略了W置换)
 
-    ![](struct.png)
+    ![](pics/struct.png)
 
 - 生成子密钥的调度结构
 
-    ![](subkeys.png)
+    ![](pics/subkeys.png)
 
 - Feistel函数的结构
 
-    ![](F.png)
+    ![](pics/F.png)
 
 ----
 
