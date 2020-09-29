@@ -125,8 +125,6 @@ uint64 Feistel(uint64 text, uint64 subkey)
     // 1. E-扩展至48位
     text = E_expansion(text);
 
-
-
     // 2. 按位异或
     text = text ^ subkey;
 
@@ -147,12 +145,8 @@ uint64 Feistel(uint64 text, uint64 subkey)
         t = t << (4 * i);
         afterS = afterS | t;
 
-        // 右移6位
         text = text >> 6;
-
-
     }
-
 
     // 4. P-Perm
     uint64 res = P_perm(afterS);
@@ -177,26 +171,22 @@ uint64 encryption(uint64 key, uint64 plainText)
     L[0] = L0R0 >> 32;
     R[0] = (L0R0 << 32) >> 32;
 
-
     // 2.Feistel rounds -> L16R16
     for(int i = 1; i <= 16; i++)
     {
         L[i] = R[i-1];
         R[i] = L[i-1] ^ Feistel(R[i-1], subkeySet[i]);
-
     }
 
     // 3.交换置换
     R[16] = R[16] << 32;
     uint64 ciphertext = R[16] | L[16];
 
-
     // 4.IP-1 perm
     ciphertext = finalPerm(ciphertext);
 
     return ciphertext;
 }
-
 
 /* Decryption
  * input : 64-bit key, 64-bit cipherText
