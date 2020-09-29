@@ -1,7 +1,7 @@
 
 typedef unsigned long long uint64;
 
-/* Permutation function :
+/* General Permutation function
  * input : input block
  * table : table
  * fromN : number of bits before permutation

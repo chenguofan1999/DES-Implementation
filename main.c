@@ -23,6 +23,5 @@ int main()
      * 1. show the Encryption and Decryption result
      * 2. Check if the decrypted text equals the original plain text
      */
-
     //customTest();
 }

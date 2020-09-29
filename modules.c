@@ -1,4 +1,4 @@
-#include "tables.h"
+#include "tables.c"
 #include "toolFunc.c"
 
 
@@ -122,28 +122,28 @@ void genSubKeys(uint64 K, uint64 *subkeys)
  */ 
 uint64 Feistel(uint64 text, uint64 subkey)
 {
-    // 1. E-扩展至48位
+    // 1. E-extension -> 48 bits
     text = E_expansion(text);
 
-    // 2. 按位异或
+    // 2. Do Xor
     text = text ^ subkey;
 
     // 3. S-box transform -> afterS
     uint64 afterS = 0;
     for(int i = 0; i < 8; i++)
     {
-        // 每次取最低6位
+        // take the lowest 6 bits
         uint64 t = (text << 58) >> 58;
         
-        // x是t的1,6位
+        // x = t1t6
         uint64 x = (t >> 5) << 1 | (t & 1); 
         
-        // y是t的中间4位
+        // y = t2t3t4t5
         uint64 y = t << 59 >> 59 >> 1;
 
-        t = S_box[7 - i][x][y];
-        t = t << (4 * i);
-        afterS = afterS | t;
+        uint64 sOut = S_box[7 - i][x][y];
+        sOut = sOut << (4 * i);
+        afterS = afterS | sOut;
 
         text = text >> 6;
     }
@@ -178,7 +178,7 @@ uint64 encryption(uint64 key, uint64 plainText)
         R[i] = L[i-1] ^ Feistel(R[i-1], subkeySet[i]);
     }
 
-    // 3.交换置换
+    // 3.Exchange Perm
     R[16] = R[16] << 32;
     uint64 ciphertext = R[16] | L[16];
 
@@ -212,7 +212,7 @@ uint64 decryption(uint64 key, uint64 cipherText)
         R[i] = L[i-1] ^ Feistel(R[i-1], subkeySet[17-i]);
     }
 
-    // 3.交换置换
+    // 3.Exchange Perm
     R[16] = R[16] << 32;
     uint64 plainText = R[16] | L[16];
 

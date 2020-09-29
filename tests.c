@@ -35,7 +35,7 @@ void randomTest()
     }
 }
 
-
+// Input your plaintext and key
 void customTest()
 {
     uint64 plain;
