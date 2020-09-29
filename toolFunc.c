@@ -1,6 +1,6 @@
 
-
 typedef unsigned long long uint64;
+
 /* Permutation function :
  * input : input block
  * table : table
@@ -24,7 +24,7 @@ uint64 perm(uint64 input, short table[], int fromN, int toN)
  * [decimal]
  * [binary]
  */
-void print64(uint64 num)
+void printInBits(uint64 num)
 {
     printf("%llu\n",num);
     for(int i = 63; i >= 0; i--)
@@ -36,7 +36,7 @@ void print64(uint64 num)
  * [decimal]
  * [highest 64 - n bits]  [lowest n bits] 
  */
-void print64n(uint64 num, int n)
+void printInBitsN(uint64 num, int n)
 {
     printf("%llu\n",num);
     for(int i = 63; i >= n; i--)

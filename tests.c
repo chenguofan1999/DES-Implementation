@@ -1,6 +1,7 @@
 // test random for 20 times
-void testRandom()
+void randomTest()
 {
+    printf ("Start 20 random tests:\n\n");
     srand(time(NULL)); 
 
     for(int i = 0; i < 20; i++)
@@ -27,6 +28,26 @@ void testRandom()
         printf("Encrypt : %016llx -> %016llx\n", plain, cipher);
         printf("Decrypt : %016llx -> %016llx\n", cipher, translated);
 
+        if(plain == translated)
+            printf("Check equal : %016llx == %016llx , succeed!\n",plain, translated);
+        else printf("Check equal : %016llx != %016llx , failed!\n",plain, translated);
+        printf("\n");
+    }
+}
+
+
+void customTest()
+{
+    uint64 plain;
+    uint64 key;
+    while(1)
+    {
+        scanf("%16llx", &plain);
+        scanf("%16llx", &key);
+        uint64 cipher = encryption(key, plain);
+        uint64 translated = decryption(key,cipher);
+        printf("Encrypt : %016llx -> %016llx\n", plain, cipher);
+        printf("Decrypt : %016llx -> %016llx\n", cipher, translated);
         if(plain == translated)
             printf("Check equal : %016llx == %016llx , succeed!\n",plain, translated);
         else printf("Check equal : %016llx != %016llx , failed!\n",plain, translated);
